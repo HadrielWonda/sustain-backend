@@ -126,6 +126,12 @@ exports.resetPassword = (req, res) => {
             userID: user.userID
         }, 'testsecretkey')
         // send email to user with token
+        // transport.sendMail({
+            //     to: user.email,
+            //     from: 'support@getsustain.app',
+            //     subject: 'Welcome to Sustain',
+            //     html: ''
+            // })
         res.status(200).json({
             message: "password reset email sent",
             data: {
