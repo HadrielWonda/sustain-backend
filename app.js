@@ -6,12 +6,14 @@ const mongoose = require('mongoose');
 const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/user');
 const providerRoutes = require('./routes/provider');
+const { default: helmet } = require('helmet');
 
 const dbURI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@sustain-backend-test.isps3.mongodb.net/sustain-backend-test?retryWrites=true&w=majority`;
 
 const app = express();
 
 app.use(bodyParser.json())
+app.use(helmet());
 
 app.use('/v1', adminRoutes);
 app.use('/v1', userRoutes);

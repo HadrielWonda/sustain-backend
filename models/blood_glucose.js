@@ -1,22 +1,22 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const bloodPressureSchema = new Schema({
+const bloodGlucoseSchema = new Schema({
     userID: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-    systolicBloodPressure: {
+    bloodGlucose: {
         type: String,
         required: true
     }, 
-    diastolicBloodPressure: {
+    context: {
         type: String,
         required: true
-    }, 
+    },
 }, { timestamps: true });
 
-const BloodPressure = mongoose.model('blood_pressure_log', bloodPressureSchema);
+const BloodGlucose = mongoose.model('blood_glucose_log', bloodGlucoseSchema);
 
-module.exports = BloodPressure;
+module.exports = BloodGlucose;

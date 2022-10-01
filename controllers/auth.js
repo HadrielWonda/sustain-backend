@@ -25,14 +25,14 @@ exports.login = (req, res, next) => {
     }).then((user) => {
         if (!user) {
             const error = new Error('a user with this email could not be found');
-            error.status = 401;
+            error.status = 404;
             throw error;
         }
         bcrypt.compare(req.body.password, user.password).then((passMatch) => {
             if (passMatch) {
                 const token = jwt.sign({
                     email: user.email,
-                    userID: user.userID
+                    userID: user._id
                 }, 'testsecretkey')
                 return res.status(200).json({
                     message: 'login successful',
@@ -42,7 +42,7 @@ exports.login = (req, res, next) => {
                             first_name: user.firstName,
                             last_name: user.lastName,
                             email: user.email,
-                            user_id: result._id
+                            user_id: user._id
                         }
                     }
                 })
@@ -55,7 +55,6 @@ exports.login = (req, res, next) => {
             next(e);
         })
     }).catch((e) => {
-        e.status = 500;
         next(e);
     });
 
@@ -71,7 +70,6 @@ exports.signUp = (req, res, next) => {
     }
     bcrypt.hash(req.body.password, 12).then((hashedPass) => {
         const user = new User({
-            userID: req.body.user_id,
             firstName: req.body.first_name,
             lastName: req.body.last_name,
             email: req.body.email,

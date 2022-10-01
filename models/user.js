@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    patientID: {
-        type: String,
-        required: true
-    },
     firstName: {
         type: String,
         required: true
@@ -21,6 +17,9 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true
+    },
+    profileImageURL: {
+        type: String,
     },
     gender: {
         type: String
@@ -45,6 +44,9 @@ const userSchema = new Schema({
     },
     hasPaid: {
         type: Boolean
+    },
+    pushToken: {
+        type: String 
     },
     resetToken: {
         type: String 

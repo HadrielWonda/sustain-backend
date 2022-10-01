@@ -1,25 +1,34 @@
-const jwt = require();
-const User = require('../models/user')
+const jwt = require('jsonwebtoken');
 
-module.exports = (req, res, next) => {
+exports.hasValidToken = (req, res, next) => {
     const header = req.get('Authorization');
     if (!header) {
-        const error = new Error('not authenticated');
+        const error = new Error('no token');
         error.status = 401
         throw error;
     }
     const token = header.split(' ')[1];
     try {
         decodedToken = jwt.verify(token, 'testsecretkey');
+        if (!decodedToken) {
+            const error = new Error('invalid token');
+            error.status = 401
+            throw error;
+        }
+        req.userID = decodedToken.userID;
+        next();
     } catch (e) {
-        e.status = 500;
+        e.status = 403;
         next(e);
     }
-    if (!decodedToken) {
-        const error = new Error('not authenticated');
-        error.status = 401
+}
+
+exports.tokenMatchesUserID = (req, res, next) => {
+    const idFromToken = req.userID;
+    const idFromParams = req.params.userID;
+    if (idFromToken !== idFromParams) {
+        const error = new Error('invalid userID')
         throw error;
     }
-    req.userID = decodedToken.userId;
     next();
 }
