@@ -2,21 +2,23 @@ const jwt = require();
 const User = require('../models/user')
 
 module.exports = (req, res, next) => {
-    const token = req.get('Authorization').split(' ')[1];
+    const header = req.get('Authorization');
+    if (!header) {
+        const error = new Error('not authenticated');
+        error.status = 401
+        throw error;
+    }
+    const token = header.split(' ')[1];
     try {
         decodedToken = jwt.verify(token, 'testsecretkey');
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({
-            message: "an error occured",
-            error: e
-        })
+    } catch (e) {
+        e.status = 500;
+        next(e);
     }
     if (!decodedToken) {
-        return res.status(401).json({
-            message: "not authenticated",
-            error: e
-        })
+        const error = new Error('not authenticated');
+        error.status = 401
+        throw error;
     }
     req.userID = decodedToken.userId;
     next();

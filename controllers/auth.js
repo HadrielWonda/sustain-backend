@@ -8,7 +8,7 @@ const { validationResult } = require('express-validator')
 
 const transport = nodemailer.createTransport(sendgridTransport({
     auth: {
-        api_key: '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'
+        api_key: process.env.SENDGRID_KEY
     }
 }))
 
@@ -24,9 +24,9 @@ exports.login = (req, res, next) => {
         email: req.body.email
     }).then((user) => {
         if (!user) {
-            return res.status(401).json({
-                message: 'invalid email or password',
-            })
+            const error = new Error('a user with this email could not be found');
+            error.status = 401;
+            throw error;
         }
         bcrypt.compare(req.body.password, user.password).then((passMatch) => {
             if (passMatch) {
@@ -41,26 +41,22 @@ exports.login = (req, res, next) => {
                         user: {
                             first_name: user.firstName,
                             last_name: user.lastName,
-                            email: user.email
+                            email: user.email,
+                            user_id: result._id
                         }
                     }
                 })
             }
-            res.status(401).json({
-                message: 'invalid email or password',
-                data: null
-            })
+            const error = new Error('wrong password');
+            error.status = 401;
+            throw error;
         }).catch((e) => {
-            res.json({
-                message: 'an error occured',
-                error: e
-            })
+            e.status = 500;
+            next(e);
         })
     }).catch((e) => {
-        res.json({
-            message: 'an error occureded',
-            error: e.message
-        });
+        e.status = 500;
+        next(e);
     });
 
 }
@@ -82,18 +78,20 @@ exports.signUp = (req, res, next) => {
             password: hashedPass,
         });
         return user.save();
-    }).then(() => {
+    }).then((result) => {
         const token = jwt.sign({
-            email: req.body.email,
-            userID: req.body.user_id
+            email: result.email,
+            userID: result._id
         }, 'testsecretkey')
-        res.status(200).json({
+        res.status(201).json({
             message: 'account created successfully',
             data: {
                 token: token,
                 user: {
-                    name: req.body.name,
-                    email: req.body.email
+                    first_name: result.firstName,
+                    last_name: result.lastName,
+                    email: result.email,
+                    user_id: result._id
                 }
             }
         });

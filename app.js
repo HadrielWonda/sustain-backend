@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -5,7 +7,7 @@ const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/user');
 const providerRoutes = require('./routes/provider');
 
-const dbURI = 'mongodb+srv://josephanya:getsustainapp@sustain-backend-test.isps3.mongodb.net/sustain-backend-test?retryWrites=true&w=majority';
+const dbURI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@sustain-backend-test.isps3.mongodb.net/sustain-backend-test?retryWrites=true&w=majority`;
 
 const app = express();
 
@@ -42,4 +44,3 @@ mongoose.connect(dbURI, { useNewUrlParser: true }).
     }).catch((e) => {
         console.log(e);
     });
-

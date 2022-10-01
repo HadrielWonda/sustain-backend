@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const transactionSchema = new Schema({
     userID: {
         type: Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
     reference: {
