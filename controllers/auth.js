@@ -3,6 +3,8 @@ const User = require('../models/user')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 const sendgridTransport = require('nodemailer-sendgrid-transport')
+const crypto = require('crypto')
+const { validationResult } = require('express-validator')
 
 const transport = nodemailer.createTransport(sendgridTransport({
     auth: {
@@ -10,14 +12,20 @@ const transport = nodemailer.createTransport(sendgridTransport({
     }
 }))
 
-exports.login = (req, res) => {
+exports.login = (req, res, next) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        return res.status(422).json({
+            message: 'validation failed',
+            error: error.array()
+        });
+    }
     User.findOne({
         email: req.body.email
     }).then((user) => {
         if (!user) {
-            return res.json({
-                message: "invalid email or password",
-                data: null
+            return res.status(401).json({
+                message: 'invalid email or password',
             })
         }
         bcrypt.compare(req.body.password, user.password).then((passMatch) => {
@@ -27,7 +35,7 @@ exports.login = (req, res) => {
                     userID: user.userID
                 }, 'testsecretkey')
                 return res.status(200).json({
-                    message: "login successful",
+                    message: 'login successful',
                     data: {
                         token: token,
                         user: {
@@ -38,110 +46,118 @@ exports.login = (req, res) => {
                     }
                 })
             }
-            res.json({
-                message: "invalid email or password",
+            res.status(401).json({
+                message: 'invalid email or password',
                 data: null
             })
         }).catch((e) => {
             res.json({
-                message: "an error occured",
+                message: 'an error occured',
                 error: e
             })
         })
     }).catch((e) => {
         res.json({
-            message: "an error occured",
-            error: e
+            message: 'an error occureded',
+            error: e.message
         });
     });
 
 }
 
-exports.signUp = (req, res) => {
-    User.findOne({
-        email: req.body.email
-    }).then((userDoc) => {
-        if (userDoc) {
-            return res.status(200).json({
-                message: "a user with this email already exists"
-            });
-        }
-        bcrypt.hash(req.body.password, 12).then((hashedPass) => {
-            const user = new User({
-                userID: req.body.user_id,
-                firstName: req.body.first_name,
-                lastName: req.body.last_name,
-                email: req.body.email,
-                password: hashedPass,
-            });
-            return user.save();
-        }).then(() => {
-            const token = jwt.sign({
-                email: user.email,
-                userID: user.userID
-            }, 'testsecretkey')
-            res.status(200).json({
-                message: "account created successfully",
-                data: {
-                    token: token,
-                    user: {
-                        name: req.body.name,
-                        email: req.body.email
-                    }
+exports.signUp = (req, res, next) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        return res.status(422).json({
+            message: 'validation failed',
+            error: error.array()
+        });
+    }
+    bcrypt.hash(req.body.password, 12).then((hashedPass) => {
+        const user = new User({
+            userID: req.body.user_id,
+            firstName: req.body.first_name,
+            lastName: req.body.last_name,
+            email: req.body.email,
+            password: hashedPass,
+        });
+        return user.save();
+    }).then(() => {
+        const token = jwt.sign({
+            email: req.body.email,
+            userID: req.body.user_id
+        }, 'testsecretkey')
+        res.status(200).json({
+            message: 'account created successfully',
+            data: {
+                token: token,
+                user: {
+                    name: req.body.name,
+                    email: req.body.email
                 }
-            });
-            // send email to user
+            }
+        });
+        // send email to user
+        // transport.sendMail({
+        //     to: user.email,
+        //     from: 'support@getsustain.app',
+        //     subject: 'Welcome to Sustain',
+        //     html: ''
+        // })
+    }).catch((e) => {
+        return next(e);
+    });
+
+}
+
+exports.resetPassword = (req, res, next) => {
+    crypto.randomBytes(32, (error, buffer) => {
+        if (error) {
+            console.log(error)
+        }
+        token = buffer.toString('hex');
+        User.findOne({ email: req.body.email }).then((user) => {
+            if (!user) {
+                const error = new Error('invalid email')
+                error.status = 404;
+                throw error;
+            }
+            user.resetToken = token;
+            user.resetTokenExpiration = Date.now() + 3600000
+            return user.save();
+        }).then((result) => {
+            console.log(result)
+            // send email to user with token
             // transport.sendMail({
             //     to: user.email,
             //     from: 'support@getsustain.app',
             //     subject: 'Welcome to Sustain',
             //     html: ''
-            // })
+            // })             
+        }).then(() => {
+            res.status(200).json({
+                message: 'password reset email sent',
+                data: {
+                    email: req.body.email,
+                }
+            })
         }).catch((e) => {
-            res.json({
-                message: "an error occured",
-                error: e
-            });
-        });
-    }).catch((e) => {
-        res.json({
-            message: "an error occured",
-            error: e
-        });
+            return next(e);
+        })
     });
 }
 
-exports.resetPassword = (req, res) => {
-    User.findOne({
-        email: req.body.email
-    }).then((user) => {
-        if (!user) {
-            res.json({
-                message: "invalid email",
-                data: null
-            })
-        }
-        const token = jwt.sign({
-            email: user.email,
-            userID: user.userID
-        }, 'testsecretkey')
-        // send email to user with token
-        // transport.sendMail({
-            //     to: user.email,
-            //     from: 'support@getsustain.app',
-            //     subject: 'Welcome to Sustain',
-            //     html: ''
-            // })
-        res.status(200).json({
-            message: "password reset email sent",
-            data: {
-                email: req.body.email,
-            }
-        })
-    }).catch(() => {
-        res.json({
-            message: "an error occured",
-            error: e
-        });
+exports.setNewPassword = (req, res, next) => {
+    let resetUser;
+    User.findOne({ resetToken: req.body.token, resetTokenExpiration: { $gt: Date.now() }, email: req.body.email }).then((user) => {
+        resetUser = user;
+        return bcrypt.hash(req.body.password, 12)
+    }).then((hashedPass) => {
+        resetUser.password = hashedPass;
+        resetUser.resetToken = undefined;
+        resetUser.resetTokenExpiration = undefined;
+        return resetUser.save();
+    }).catch((e) => {
+        return next(e);
     })
 }

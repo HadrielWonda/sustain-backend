@@ -2,7 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const adminRoutes = require('./routes/admin');
-const usersRoutes = require('./routes/users');
+const userRoutes = require('./routes/user');
+const providerRoutes = require('./routes/provider');
 
 const dbURI = 'mongodb+srv://josephanya:getsustainapp@sustain-backend-test.isps3.mongodb.net/sustain-backend-test?retryWrites=true&w=majority';
 
@@ -11,17 +12,22 @@ const app = express();
 app.use(bodyParser.json())
 
 app.use('/v1', adminRoutes);
-app.use('/v1', usersRoutes);
+app.use('/v1', userRoutes);
+app.use('/v1', providerRoutes);
 
-app.use((req, res) => {
-    res.status(404).json({
-        message: "resource or endpoint not found",
-    });
+app.use((req, res, next) => {
+    const error = new Error('resource or endpoint not found')
+    error.status = 404;
+    next(error);
 });
 
 app.use((err, req, res, next) => {
-    res.status(500).json({
-        message: err.message,
+    res.status(err.status || 500);
+    res.json({
+        error: {
+            status: err.status || 500,
+            message: err.message
+        },
     });
 })
 

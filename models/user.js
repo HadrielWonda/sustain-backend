@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    userID: {
+    patientID: {
         type: String,
         required: true
     },
@@ -45,6 +45,12 @@ const userSchema = new Schema({
     },
     hasPaid: {
         type: Boolean
+    },
+    resetToken: {
+        type: String 
+    },
+    resetTokenExpiration: {
+        type: Date 
     },
 }, { timestamps: true });
 
