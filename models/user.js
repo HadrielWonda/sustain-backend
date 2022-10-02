@@ -54,6 +54,11 @@ const userSchema = new Schema({
     resetTokenExpiration: {
         type: Date 
     },
+    role: {
+        type: String,
+        enum: ['patient', 'coach', 'doctor'],
+        required: true 
+    },
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
