@@ -18,6 +18,12 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
+    username: {
+        type: String,
+    },
+    bio: {
+        type: String,
+    },
     profileImageURL: {
         type: String,
     },
@@ -56,6 +62,7 @@ const userSchema = new Schema({
     },
     role: {
         type: String,
+        default: 'patient',
         enum: ['patient', 'coach', 'doctor'],
         required: true 
     },

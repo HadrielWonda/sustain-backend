@@ -5,45 +5,61 @@ const Weight = require('../models/weight');
 const Food = require('../models/food');
 const { validationResult } = require('express-validator')
 
-exports.getUser = (req, res, next) => {
-    User.findById(req.params.userID).then((result) => {
-        res.status(200).send(result);
-    }).catch((e) => {
+exports.getUser = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.userID);
+        res.status(200).send(user);
+    } catch (e) {
         e.message = 'invalid userID'
         next(e);
-    });
+    }
 };
 
-exports.getBloodGlucoseLogs = (req, res, next) => {
-    BloodGlucose.find({ userID: req.params.userID }).then((result) => {
-        res.status(200).send(result);
-    }).catch((e) => {
+exports.editProfile = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.userID);
+        user.bio = req.body.bio;
+        await user.save();
+    } catch (e) {
+        e.message = 'invalid userID'
         next(e);
-    });
+    }
+};
+
+exports.getBloodGlucoseLogs = async (req, res, next) => {
+    try {
+        const result = await BloodGlucose.find({ userID: req.params.userID });
+        res.status(200).send(result);
+    } catch (e) {
+        next(e);
+    }
 };
 
 exports.getBloodPressureLogs = (req, res, next) => {
-    BloodPressure.find({ userID: req.params.userID }).then((result) => {
+    try {
+        const result = BloodPressure.find({ userID: req.params.userID });
         res.status(200).send(result);
-    }).catch((e) => {
+    } catch (e) {
         next(e);
-    });
+    }
 };
 
 exports.getWeightLogs = (req, res, next) => {
-    Weight.find({ userID: req.params.userID }).then((result) => {
+    try {
+        const result =  Weight.find({ userID: req.params.userID });
         res.status(200).send(result);
-    }).catch((e) => {
+    } catch (e) {
         next(e);
-    });
+    }
 };
 
 exports.getFoodLogs = (req, res, next) => {
-    Food.find({ userID: req.params.userID }).then((result) => {
+    try {
+        const result =  Food.find({ userID: req.params.userID });
         res.status(200).send(result);
-    }).catch((e) => {
+    } catch (e) {
         next(e);
-    });
+    }
 };
 
 exports.saveBloodPressureLog = async (req, res, next) => {

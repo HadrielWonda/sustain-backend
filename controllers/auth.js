@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer')
 const sendgridTransport = require('nodemailer-sendgrid-transport')
 const crypto = require('crypto')
 const { validationResult } = require('express-validator')
+const email = require('../utils/email_templates')
 
 const transport = nodemailer.createTransport(sendgridTransport({
     auth: {
@@ -12,7 +13,7 @@ const transport = nodemailer.createTransport(sendgridTransport({
     }
 }))
 
-exports.login = (req, res, next) => {
+exports.login = async (req, res, next) => {
     const error = validationResult(req);
     if (!error.isEmpty()) {
         return res.status(422).json({
@@ -20,47 +21,41 @@ exports.login = (req, res, next) => {
             error: error.array()
         });
     }
-    User.findOne({
-        email: req.body.email
-    }).then((user) => {
+    try {
+        const user = await User.findOne({ email: req.body.email });
         if (!user) {
             const error = new Error('a user with this email could not be found');
             error.status = 404;
             throw error;
         }
-        bcrypt.compare(req.body.password, user.password).then((passMatch) => {
-            if (passMatch) {
-                const token = jwt.sign({
-                    email: user.email,
-                    userID: user._id
-                }, 'testsecretkey')
-                return res.status(200).json({
-                    message: 'login successful',
-                    data: {
-                        token: token,
-                        user: {
-                            first_name: user.firstName,
-                            last_name: user.lastName,
-                            email: user.email,
-                            user_id: user._id
-                        }
+        const passMatch = await bcrypt.compare(req.body.password, user.password);
+        if (passMatch) {
+            const token = jwt.sign({
+                email: user.email,
+                userID: user._id
+            }, 'testsecretkey')
+            return res.status(200).json({
+                message: 'login successful',
+                data: {
+                    token: token,
+                    user: {
+                        first_name: user.firstName,
+                        last_name: user.lastName,
+                        email: user.email,
+                        user_id: user._id
                     }
-                })
-            }
-            const error = new Error('wrong password');
-            error.status = 401;
-            throw error;
-        }).catch((e) => {
-            e.status = 500;
-            next(e);
-        })
-    }).catch((e) => {
+                }
+            })
+        }
+        const error = new Error('wrong password');
+        error.status = 401;
+        throw error;
+    } catch (e) {
         next(e);
-    });
-
+    }
 }
 
-exports.signUp = (req, res, next) => {
+exports.signUp = async (req, res, next) => {
     const error = validationResult(req);
     if (!error.isEmpty()) {
         return res.status(422).json({
@@ -68,15 +63,15 @@ exports.signUp = (req, res, next) => {
             error: error.array()
         });
     }
-    bcrypt.hash(req.body.password, 12).then((hashedPass) => {
+    try {
+        const hashedPass = await bcrypt.hash(req.body.password, 12);
         const user = new User({
             firstName: req.body.first_name,
             lastName: req.body.last_name,
             email: req.body.email,
             password: hashedPass,
         });
-        return user.save();
-    }).then((result) => {
+        const result = await user.save();
         const token = jwt.sign({
             email: result.email,
             userID: result._id
@@ -98,21 +93,22 @@ exports.signUp = (req, res, next) => {
         //     to: user.email,
         //     from: 'support@getsustain.app',
         //     subject: 'Welcome to Sustain',
-        //     html: ''
+        //     html: email.getWelcomeEmailHtml()
         // })
-    }).catch((e) => {
-        return next(e);
-    });
-
+    } catch (e) {
+        next(e);
+    }
 }
 
-exports.resetPassword = (req, res, next) => {
-    crypto.randomBytes(32, (error, buffer) => {
-        if (error) {
-            console.log(error)
-        }
-        token = buffer.toString('hex');
-        User.findOne({ email: req.body.email }).then((user) => {
+exports.resetPassword = async (req, res, next) => {
+    try {
+        crypto.randomBytes(32, (error, buffer) => {
+            if (error) {
+                error.status = 500;
+                throw error;
+            }
+            token = buffer.toString('hex');
+            const user = await User.findOne({ email: req.body.email });
             if (!user) {
                 const error = new Error('invalid email')
                 error.status = 404;
@@ -120,8 +116,7 @@ exports.resetPassword = (req, res, next) => {
             }
             user.resetToken = token;
             user.resetTokenExpiration = Date.now() + 3600000
-            return user.save();
-        }).then((result) => {
+            const result = await user.save();
             console.log(result)
             // send email to user with token
             // transport.sendMail({
@@ -129,31 +124,33 @@ exports.resetPassword = (req, res, next) => {
             //     from: 'support@getsustain.app',
             //     subject: 'Welcome to Sustain',
             //     html: ''
-            // })             
-        }).then(() => {
+            // }) 
             res.status(200).json({
                 message: 'password reset email sent',
                 data: {
                     email: req.body.email,
                 }
             })
-        }).catch((e) => {
-            return next(e);
-        })
-    });
+
+        });
+    } catch (e) {
+        next(e);
+    }
 }
 
-exports.setNewPassword = (req, res, next) => {
-    let resetUser;
-    User.findOne({ resetToken: req.body.token, resetTokenExpiration: { $gt: Date.now() }, email: req.body.email }).then((user) => {
-        resetUser = user;
-        return bcrypt.hash(req.body.password, 12)
-    }).then((hashedPass) => {
-        resetUser.password = hashedPass;
-        resetUser.resetToken = undefined;
-        resetUser.resetTokenExpiration = undefined;
-        return resetUser.save();
-    }).catch((e) => {
-        return next(e);
-    })
+exports.setNewPassword = async (req, res, next) => {
+    try {
+        const user = await User.findOne({ resetToken: req.body.token, resetTokenExpiration: { $gt: Date.now() }, email: req.body.email });
+        const hashedPass = bcrypt.hash(req.body.password, 12)
+        user.password = hashedPass;
+        user.resetToken = undefined;
+        user.resetTokenExpiration = undefined;
+        await resetUser.save();
+    } catch (e) {
+        next(e);
+    }
+}
+
+exports.verifyInsuranceCover = async (req, res, next) => {
+
 }

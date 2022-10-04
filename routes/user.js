@@ -16,6 +16,8 @@ router.post('/users/webhook-payments', webhook.payments);
 
 router.get('/users/:userID', authorization.hasValidToken, authorization.tokenMatchesUserID, user.getUser);
 
+router.post('/users/:userID', authorization.hasValidToken, authorization.tokenMatchesUserID, user.editProfile);
+
 router.get('/users/:userID/blood-glucose-log', authorization.hasValidToken, authorization.tokenMatchesUserID, user.getBloodGlucoseLogs);
 router.get('/users/:userID/blood-pressure-log', authorization.hasValidToken, authorization.tokenMatchesUserID, user.getBloodPressureLogs);
 router.get('/users/:userID/weight-log', authorization.hasValidToken, authorization.tokenMatchesUserID, user.getWeightLogs);

@@ -73,6 +73,7 @@ const chargeSuccess = async (req, res, next) => {
             console.log('no result')
         }
         console.log(result)
+        // do other operations
     } catch (e) {
         next(e);
     }
