@@ -1,4 +1,5 @@
 const User = require('../../models/user')
+const file = require('../../utils/file')
 
 exports.getPatient = async (req, res, next) => {
     try {
@@ -21,9 +22,15 @@ exports.getPatientList = async (req, res, next) => {
 
 exports.editProfile = async (req, res, next) => {
     try {
+        // check for attached image, save to s3 buckets, and get image link
+
+        // save link in database
         const user = await User.findById(req.userID);
         user.bio = req.body.bio;
         await user.save();
+
+        // delete image from tmp folder
+        file.deleteFromTmp(req.file.filename)
     } catch (e) {
         e.message = 'invalid userID'
         next(e);

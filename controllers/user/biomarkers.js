@@ -3,6 +3,7 @@ const BloodPressure = require('../../models/blood_pressure');
 const Weight = require('../../models/weight');
 const Food = require('../../models/food');
 const { validationResult } = require('express-validator')
+const file = require('../../utils/file')
 
 exports.getBloodGlucoseLogs = async (req, res, next) => {
     try {
@@ -24,7 +25,7 @@ exports.getBloodPressureLogs = (req, res, next) => {
 
 exports.getWeightLogs = (req, res, next) => {
     try {
-        const result =  Weight.find({ userID: req.params.patientID });
+        const result = Weight.find({ userID: req.params.patientID });
         res.status(200).send(result);
     } catch (e) {
         next(e);
@@ -33,7 +34,7 @@ exports.getWeightLogs = (req, res, next) => {
 
 exports.getFoodLogs = (req, res, next) => {
     try {
-        const result =  Food.find({ userID: req.params.patientID });
+        const result = Food.find({ userID: req.params.patientID });
         res.status(200).send(result);
     } catch (e) {
         next(e);
@@ -134,11 +135,14 @@ exports.saveFood = async (req, res, next) => {
         });
     }
     try {
+        // TODO: check for attached image, save to s3 buckets, and get image link
+
+        // save link in database
         const log = new Food({
             userID: req.userID,
             food: req.body.food,
             mealType: req.body.meal_type,
-            imageURL: req.body.image_url,
+            imageURL: req.file,
         });
         const result = await log.save();
         res.status(201).json({
@@ -151,6 +155,9 @@ exports.saveFood = async (req, res, next) => {
                 }
             }
         });
+
+        // delete image from tmp folder
+        file.deleteFromTmp(req.file.filename)
     } catch (e) {
         next(e);
     }
