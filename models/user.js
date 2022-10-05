@@ -51,20 +51,24 @@ const userSchema = new Schema({
     hasPaid: {
         type: Boolean
     },
-    pushToken: {
-        type: String 
-    },
-    resetToken: {
-        type: String 
-    },
-    resetTokenExpiration: {
-        type: Date 
-    },
     role: {
         type: String,
         default: 'patient',
         enum: ['patient', 'coach', 'doctor'],
-        required: true 
+        required: true
+    },
+    patients: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+    }],
+    pushToken: {
+        type: String
+    },
+    resetToken: {
+        type: String
+    },
+    resetTokenExpiration: {
+        type: Date
     },
 }, { timestamps: true });
 

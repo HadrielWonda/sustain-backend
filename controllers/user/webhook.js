@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const request = require('request');
-const Transaction = require('../models/transaction')
+const Transaction = require('../../models/transaction')
 const { response } = require('express');
 
 const secret = process.env.PAYSTACK_SECRET

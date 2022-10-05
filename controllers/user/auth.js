@@ -1,11 +1,11 @@
 const bcrypt = require('bcryptjs')
-const User = require('../models/user')
+const User = require('../../models/user')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 const sendgridTransport = require('nodemailer-sendgrid-transport')
 const crypto = require('crypto')
 const { validationResult } = require('express-validator')
-const email = require('../utils/email_templates')
+const email = require('../../utils/email_templates')
 
 const transport = nodemailer.createTransport(sendgridTransport({
     auth: {

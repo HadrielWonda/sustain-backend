@@ -22,13 +22,3 @@ exports.hasValidToken = (req, res, next) => {
         next(e);
     }
 }
-
-exports.tokenMatchesUserID = (req, res, next) => {
-    const idFromToken = req.userID;
-    const idFromParams = req.params.userID;
-    if (idFromToken !== idFromParams) {
-        const error = new Error('invalid userID')
-        throw error;
-    }
-    next();
-}
