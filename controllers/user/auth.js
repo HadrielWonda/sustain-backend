@@ -1,11 +1,11 @@
-const bcrypt = require('bcryptjs')
-const User = require('../../models/user')
-const jwt = require('jsonwebtoken')
-const nodemailer = require('nodemailer')
-const sendgridTransport = require('nodemailer-sendgrid-transport')
-const crypto = require('crypto')
-const { validationResult } = require('express-validator')
-const email = require('../../utils/email_templates')
+const bcrypt = require('bcryptjs');
+const User = require('../../models/user');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const sendgridTransport = require('nodemailer-sendgrid-transport');
+const crypto = require('crypto');
+const { validationResult } = require('express-validator');
+const email = require('../../utils/email_templates');
 
 const transport = nodemailer.createTransport(sendgridTransport({
     auth: {
@@ -102,21 +102,23 @@ exports.signUp = async (req, res, next) => {
 
 exports.resetPassword = async (req, res, next) => {
     try {
+        let token;
         crypto.randomBytes(32, (error, buffer) => {
             if (error) {
-                error.status = 500;
-                throw error;
+                error.status = 500
+                throw error
             }
-            token = buffer.toString('hex');
-            const user = await User.findOne({ email: req.body.email });
+            token = buffer.toString('hex')
+        });
+        const user = await User.findOne({ email: req.body.email })
             if (!user) {
                 const error = new Error('invalid email')
-                error.status = 404;
-                throw error;
+                error.status = 404
+                throw error
             }
-            user.resetToken = token;
+            user.resetToken = token
             user.resetTokenExpiration = Date.now() + 3600000
-            const result = await user.save();
+            const result = await user.save()
             console.log(result)
             // send email to user with token
             // transport.sendMail({
@@ -131,8 +133,6 @@ exports.resetPassword = async (req, res, next) => {
                     email: req.body.email,
                 }
             })
-
-        });
     } catch (e) {
         next(e);
     }

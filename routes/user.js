@@ -1,36 +1,43 @@
 const express = require('express');
-const auth = require('../controllers/user/auth')
-const webhook = require('../controllers/user/webhook')
-const user = require('../controllers/user/user')
-const biomarkers = require('../controllers/user/biomarkers')
-const authorization = require('../middlewares/is_auth')
-const validator = require('../middlewares/validation')
-const permission = require('../middlewares/permission')
+const { login, signUp, resetPassword, setNewPassword } = require('../controllers/user/auth');
+const { processPayments } = require('../controllers/user/webhook');
+const { getPatientList, editProfile, getSinglePatient } = require('../controllers/user/user');
+const { getFoodLogs, getBloodGlucoseLogs, getBloodPressureLogs, getWeightLogs, saveBloodGlucose, saveBloodPressure, saveFood, saveWeight } = require('../controllers/user/biomarkers');
+const { hasValidToken } = require('../middlewares/is_auth');
+const validator = require('../middlewares/validation');
+const permission = require('../middlewares/permission');
+const { getRecipeList, getSingleRecipe, getMealPlan } = require('../controllers/user/eat');
 
 const router = express.Router();
 
-router.post('/login', validator.validate('login'), auth.login);
-router.post('/signup', validator.validate('signUp'), auth.signUp);
-router.post('/forgot-password', auth.resetPassword);
-router.post('/new-password', auth.setNewPassword);
+router.post('/login', validator.validate('login'), login);
+router.post('/signup', validator.validate('signUp'), signUp);
+router.post('/forgot-password', resetPassword);
+router.post('/new-password', setNewPassword);
 
-router.post('/webhook-payments', webhook.payments);
+router.post('/webhook-payments', processPayments);
 
-router.get('/patients/:patientID', authorization.hasValidToken, user.getPatient);
+router.get('/patients/:userID', hasValidToken, getSinglePatient);
 
-router.put('/patients/:patientID', authorization.hasValidToken, user.editProfile);
+router.put('/patients/:patientID', hasValidToken, editProfile);
 
-router.get('/patients/:patientID/blood-glucose-log', authorization.hasValidToken, biomarkers.getBloodGlucoseLogs);
-router.get('/patients/:patientID/blood-pressure-log', authorization.hasValidToken, biomarkers.getBloodPressureLogs);
-router.get('/patients/:patientID/weight-log', authorization.hasValidToken, biomarkers.getWeightLogs);
-router.get('/patients/:patientID/food-log', authorization.hasValidToken, biomarkers.getFoodLogs);
+router.get('/patients/:patientID/blood-glucose-log', hasValidToken, getBloodGlucoseLogs);
+router.get('/patients/:patientID/blood-pressure-log', hasValidToken, getBloodPressureLogs);
+router.get('/patients/:patientID/weight-log', hasValidToken, getWeightLogs);
+router.get('/patients/:patientID/food-log', hasValidToken, getFoodLogs);
 
-router.post('/patients/blood-pressure', validator.validate('saveBloodPressureLog'), authorization.hasValidToken, biomarkers.saveBloodPressure);
-router.post('/patients/blood-glucose', validator.validate('saveBloodGlucoseLog'), authorization.hasValidToken, biomarkers.saveBloodGlucose);
-router.post('/patients/weight', validator.validate('saveWeightLog'), authorization.hasValidToken, biomarkers.saveWeight);
-router.post('/patients/food', validator.validate('saveFoodLog'), authorization.hasValidToken, biomarkers.saveFood);
+router.post('/patients/blood-pressure', validator.validate('saveBloodPressureLog'), hasValidToken, saveBloodPressure);
+router.post('/patients/blood-glucose', validator.validate('saveBloodGlucoseLog'), hasValidToken, saveBloodGlucose);
+router.post('/patients/weight', validator.validate('saveWeightLog'), hasValidToken, saveWeight);
+router.post('/patients/food', validator.validate('saveFoodLog'), hasValidToken, saveFood);
 
-router.get('/provider/:providerID/patients', authorization.hasValidToken, user.getPatientList);
-router.put('/provider/:providerID', authorization.hasValidToken, user.editProfile);
+router.get('/providers/:userID', hasValidToken, getSinglePatient);
+router.get('/providers/:providerID/patients', hasValidToken, getPatientList);
+router.put('/providers/:providerID', hasValidToken, editProfile);
+
+router.get('/recipes/:recipeID', hasValidToken, getSingleRecipe);
+router.get('/recipes', hasValidToken, getRecipeList);
+
+router.get('/meal-plan/:userID', hasValidToken, getMealPlan);
 
 module.exports = router;

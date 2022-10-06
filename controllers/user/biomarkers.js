@@ -2,8 +2,8 @@ const BloodGlucose = require('../../models/blood_glucose');
 const BloodPressure = require('../../models/blood_pressure');
 const Weight = require('../../models/weight');
 const Food = require('../../models/food');
-const { validationResult } = require('express-validator')
-const file = require('../../utils/file')
+const { validationResult } = require('express-validator');
+const file = require('../../utils/file');
 
 exports.getBloodGlucoseLogs = async (req, res, next) => {
     try {

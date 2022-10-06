@@ -1,11 +1,11 @@
 const crypto = require('crypto');
 const request = require('request');
-const Transaction = require('../../models/transaction')
+const Transaction = require('../../models/transaction');
 const { response } = require('express');
 
 const secret = process.env.PAYSTACK_SECRET
 
-exports.payments = (req, res, next) => {
+exports.processPayments = (req, res, next) => {
     const hash = crypto.createHmac('sha512', secret).update(JSON.stringify(req.body)).digest('hex');
     if (hash == req.headers['x-paystack-signature']) {
 

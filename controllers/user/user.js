@@ -1,7 +1,7 @@
-const User = require('../../models/user')
-const file = require('../../utils/file')
+const User = require('../../models/user');
+const file = require('../../utils/file');
 
-exports.getPatient = async (req, res, next) => {
+exports.getSinglePatient = async (req, res, next) => {
     try {
         const user = await User.findById(req.params.userID);
         res.status(200).send(user);
@@ -22,7 +22,7 @@ exports.getPatientList = async (req, res, next) => {
 
 exports.editProfile = async (req, res, next) => {
     try {
-        // check for attached image, save to s3 buckets, and get image link
+        // TODO: check for attached image, save to s3 buckets, and get image link
 
         // save link in database
         const user = await User.findById(req.userID);
