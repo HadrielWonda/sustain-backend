@@ -1,11 +1,11 @@
 const crypto = require('crypto');
 const request = require('request');
 const Transaction = require('../../models/transaction');
-const { response } = require('express');
+const https = require('https')
 
 const secret = process.env.PAYSTACK_SECRET
 
-exports.processPayments = (req, res, next) => {
+exports.webhook = (req, res, next) => {
     const hash = crypto.createHmac('sha512', secret).update(JSON.stringify(req.body)).digest('hex');
     if (hash == req.headers['x-paystack-signature']) {
 
@@ -44,8 +44,8 @@ const chargeSuccess = async (req, res, next) => {
         });
         res.on('end', () => {
             console.log(JSON.parse(data))
-            response = JSON.parse(data)
-            status = response.data.status;
+            res = JSON.parse(data)
+            status = res.data.status;
         })
     }).on('error', error => {
         console.error(error)
@@ -70,7 +70,6 @@ const chargeSuccess = async (req, res, next) => {
                 paymentMethod: payload.data.channel
             });
             await newTransaction.save();
-            console.log('no result')
         }
         console.log(result)
         // do other operations
@@ -81,4 +80,40 @@ const chargeSuccess = async (req, res, next) => {
 
 const somethingElse = (req, res, next) => {
 
+}
+
+exports.initialize = (req, res, next) => {
+    const params = JSON.stringify({
+        "email": req.body.email,
+        "amount": req.body.amount
+    })
+    const options = {
+        hostname: 'api.paystack.co',
+        port: 443,
+        path: '/transaction/initialize',
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${secret}`,
+            'Content-Type': 'application/json'
+        }
+    }
+    let result = ''
+    const request = https.request(options, res => {
+        res.on('data', (chunk) => {
+            result += chunk
+        });
+        res.on('end', () => {
+            console.log(JSON.parse(result))
+        })
+    }).on('error', error => {
+        console.error(error);
+        next(error);
+    })
+    request.write(params)
+    request.end()
+
+    res.status(201).json({
+        access_code: result.data.access_code,
+        email: req.body.email,
+    });
 }

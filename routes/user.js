@@ -1,8 +1,8 @@
 const express = require('express');
 const { login, signUp, resetPassword, setNewPassword } = require('../controllers/user/auth');
-const { processPayments } = require('../controllers/user/webhook');
+const { webhook } = require('../controllers/user/payments');
 const { getPatientList, editProfile, getSinglePatient } = require('../controllers/user/user');
-const { getFoodLogs, getBloodGlucoseLogs, getBloodPressureLogs, getWeightLogs, saveBloodGlucose, saveBloodPressure, saveFood, saveWeight } = require('../controllers/user/biomarkers');
+const { getFoodLogs, getBloodGlucoseLogs, getBloodPressureLogs, getWeightLogs, saveBloodGlucose, saveBloodPressure, saveFood, saveWeight, getBiomarkersSummary } = require('../controllers/user/biomarkers');
 const { hasValidToken } = require('../middlewares/is_auth');
 const validator = require('../middlewares/validation');
 const permission = require('../middlewares/permission');
@@ -15,21 +15,23 @@ router.post('/signup', validator.validate('signUp'), signUp);
 router.post('/forgot-password', resetPassword);
 router.post('/new-password', setNewPassword);
 
-router.post('/webhook-payments', processPayments);
+router.post('/payments/webhook', webhook);
+router.post('/payments/intialize', webhook);
 
 router.get('/patients/:userID', hasValidToken, getSinglePatient);
 
 router.put('/patients/:patientID', hasValidToken, editProfile);
 
-router.get('/patients/:patientID/blood-glucose-log', hasValidToken, getBloodGlucoseLogs);
-router.get('/patients/:patientID/blood-pressure-log', hasValidToken, getBloodPressureLogs);
-router.get('/patients/:patientID/weight-log', hasValidToken, getWeightLogs);
-router.get('/patients/:patientID/food-log', hasValidToken, getFoodLogs);
+router.get('/patients/:patientID/biomarker/blood-glucose', hasValidToken, getBloodGlucoseLogs);
+router.get('/patients/:patientID/biomarker/blood-pressure', hasValidToken, getBloodPressureLogs);
+router.get('/patients/:patientID/biomarker/weight', hasValidToken, getWeightLogs);
+router.get('/patients/:patientID/biomarker/food', hasValidToken, getFoodLogs);
+router.get('/patients/:patientID/biomarker/summary', hasValidToken, getBiomarkersSummary);
 
-router.post('/patients/blood-pressure', validator.validate('saveBloodPressureLog'), hasValidToken, saveBloodPressure);
-router.post('/patients/blood-glucose', validator.validate('saveBloodGlucoseLog'), hasValidToken, saveBloodGlucose);
-router.post('/patients/weight', validator.validate('saveWeightLog'), hasValidToken, saveWeight);
-router.post('/patients/food', validator.validate('saveFoodLog'), hasValidToken, saveFood);
+router.post('/patients/biomarker/blood-pressure', validator.validate('saveBloodPressureLog'), hasValidToken, saveBloodPressure);
+router.post('/patients/biomarker/blood-glucose', validator.validate('saveBloodGlucoseLog'), hasValidToken, saveBloodGlucose);
+router.post('/patients/biomarker/weight', validator.validate('saveWeightLog'), hasValidToken, saveWeight);
+router.post('/patients/biomarker/food', validator.validate('saveFoodLog'), hasValidToken, saveFood);
 
 router.get('/providers/:userID', hasValidToken, getSinglePatient);
 router.get('/providers/:providerID/patients', hasValidToken, getPatientList);

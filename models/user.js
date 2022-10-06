@@ -31,13 +31,32 @@ const userSchema = new Schema({
         type: String
     },
     dob: {
-        type: String
+        type: Date
     },
     phone: {
-        type: String
+        countryCode: {
+            type: String
+        },
+        phoneNumber: {
+            type: String
+        },
     },
     address: {
-        type: Object
+        state: {
+            type: String
+        },
+        country: {
+            type: String
+        },
+    },
+    diagnosis: [{
+        type: String
+    }],
+    referrer: {
+        type: String
+    },
+    referralID: {
+        type: String
     },
     emmergencyContact: {
         type: Object
@@ -48,8 +67,9 @@ const userSchema = new Schema({
     isActive: {
         type: Boolean
     },
-    hasPaid: {
-        type: Boolean
+    hasCurrentSubscription: {
+        type: Boolean,
+        required: true
     },
     role: {
         type: String,

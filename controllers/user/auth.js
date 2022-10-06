@@ -69,7 +69,22 @@ exports.signUp = async (req, res, next) => {
             firstName: req.body.first_name,
             lastName: req.body.last_name,
             email: req.body.email,
-            password: hashedPass,
+            password: hashedPass,            
+            phone: {
+                countryCode: req.body.country_code,
+                phoneNumber: req.body.phone_number,
+            },
+            gender: req.body.gender,
+            dob: req.body.dob,
+            address: {
+                state: req.body.state,
+                country: req.body.country,
+            },
+            diagnosis: req.body.diagnosis,
+            referrer: req.body.referrer,
+            role: req.body.role,
+            isActive: true,
+            hasCurrentSubscription: false,
         });
         const result = await user.save();
         const token = jwt.sign({
@@ -111,28 +126,28 @@ exports.resetPassword = async (req, res, next) => {
             token = buffer.toString('hex')
         });
         const user = await User.findOne({ email: req.body.email })
-            if (!user) {
-                const error = new Error('invalid email')
-                error.status = 404
-                throw error
+        if (!user) {
+            const error = new Error('invalid email')
+            error.status = 404
+            throw error
+        }
+        user.resetToken = token
+        user.resetTokenExpiration = Date.now() + 3600000
+        const result = await user.save()
+        console.log(result)
+        // send email to user with token
+        // transport.sendMail({
+        //     to: user.email,
+        //     from: 'support@getsustain.app',
+        //     subject: 'Welcome to Sustain',
+        //     html: ''
+        // }) 
+        res.status(200).json({
+            message: 'password reset email sent',
+            data: {
+                email: req.body.email,
             }
-            user.resetToken = token
-            user.resetTokenExpiration = Date.now() + 3600000
-            const result = await user.save()
-            console.log(result)
-            // send email to user with token
-            // transport.sendMail({
-            //     to: user.email,
-            //     from: 'support@getsustain.app',
-            //     subject: 'Welcome to Sustain',
-            //     html: ''
-            // }) 
-            res.status(200).json({
-                message: 'password reset email sent',
-                data: {
-                    email: req.body.email,
-                }
-            })
+        })
     } catch (e) {
         next(e);
     }
@@ -140,12 +155,24 @@ exports.resetPassword = async (req, res, next) => {
 
 exports.setNewPassword = async (req, res, next) => {
     try {
-        const user = await User.findOne({ resetToken: req.body.token, resetTokenExpiration: { $gt: Date.now() }, email: req.body.email });
-        const hashedPass = bcrypt.hash(req.body.password, 12)
+        const user = await User.findOne({ resetToken: req.body.reset_token, resetTokenExpiration: { $gt: Date.now() }, email: req.body.email });
+        if (!user) {
+            const error = new Error('invalid email or reset token')
+            error.status = 404
+            throw error
+        }
+        console.log(req.body.password)
+        const hashedPass = await bcrypt.hash(req.body.password, 12)
         user.password = hashedPass;
         user.resetToken = undefined;
         user.resetTokenExpiration = undefined;
-        await resetUser.save();
+        await user.save();
+        res.status(200).json({
+            message: 'password reset successful',
+            data: {
+                email: req.body.email,
+            }
+        })
     } catch (e) {
         next(e);
     }

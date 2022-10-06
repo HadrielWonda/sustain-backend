@@ -8,33 +8,51 @@ const file = require('../../utils/file');
 exports.getBloodGlucoseLogs = async (req, res, next) => {
     try {
         const result = await BloodGlucose.find({ userID: req.params.patientID });
-        res.status(200).send(result);
+        res.status(200).send({result});
     } catch (e) {
         next(e);
     }
 };
 
-exports.getBloodPressureLogs = (req, res, next) => {
+exports.getBloodPressureLogs = async (req, res, next) => {
     try {
-        const result = BloodPressure.find({ userID: req.params.patientID });
-        res.status(200).send(result);
+        const result = await BloodPressure.find({ userID: req.params.patientID });
+        res.status(200).send({result});
     } catch (e) {
         next(e);
     }
 };
 
-exports.getWeightLogs = (req, res, next) => {
+exports.getWeightLogs = async (req, res, next) => {
     try {
-        const result = Weight.find({ userID: req.params.patientID });
-        res.status(200).send(result);
+        const result = await Weight.find({ userID: req.params.patientID });
+        res.status(200).send({result});
     } catch (e) {
         next(e);
     }
 };
 
-exports.getFoodLogs = (req, res, next) => {
+exports.getFoodLogs = async (req, res, next) => {
     try {
-        const result = Food.find({ userID: req.params.patientID });
+        const result = await Food.find({ userID: req.params.patientID });
+        res.status(200).send({result});
+    } catch (e) {
+        next(e);
+    }
+};
+
+exports.getBiomarkersSummary = async (req, res, next) => {
+    try {
+        const bg = await BloodGlucose.find({ userID: req.params.patientID }).sort({_id: -1}).limit(1);
+        const bp = await BloodPressure.find({ userID: req.params.patientID }).sort({_id: -1}).limit(1);
+        const weight = await Weight.find({ userID: req.params.patientID }).sort({_id: -1}).limit(1);
+        const food = await Food.find({ userID: req.params.patientID }).sort({_id: -1}).limit(1);
+        result = {
+            "blood_glucose" : bg,
+            "blood_pressure": bp,
+            "weight" : weight,
+            "food": food,
+        }
         res.status(200).send(result);
     } catch (e) {
         next(e);

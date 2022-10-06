@@ -3,7 +3,7 @@ const Recipe = require("../../models/recipe");
 exports.getRecipeList = async (req, res, next) => {
     try {
         const result = await Recipe.find();
-        res.status(200).send(result);
+        res.status(200).send({result});
     } catch (e) {
         next(e);
     }

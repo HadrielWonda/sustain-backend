@@ -36,7 +36,7 @@ const fileFilter = (req, file, cb) => {
 
 app.use(bodyParser.json())
 app.use(helmet());
-app.use(multer({ storage: storage, fileFilter: fileFilter }).single('image'));
+app.use(multer({ storage, fileFilter }).single('image'));
 
 io.on('connection', socket => {
     const id = socket.handshake.query.id;

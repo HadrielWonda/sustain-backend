@@ -120,3 +120,35 @@ const shoppingList = {
     ],
     "cost": 1326.62
 }
+
+const signUpBody = {
+    "first_name": "Joseph",
+    "last_name": "Anya",
+    "email": "joseph@lifebox.ng",
+    "password": "randompass",
+    "phone_number": "7081474185",
+    "country_code": "+234",
+    "gender": "male",
+    "dob": "1998-05-09",
+    "state": "Lagos",
+    "country": "Nigeria",
+    "diagnosis": ["Type 2 diabetes", "Hypertension"],
+    "role": "patient"
+}
+
+const loginBody = {
+    "first_name": "Joseph",
+    "last_name": "Anya",
+    "email": "joseph@lifebox.ng",
+    "password": "randompass",
+}
+
+const resetPassBody = {
+    "email": "joseph@lifebox.ng",
+}
+
+const newPassBody = {
+    "reset_token": "45402097e9b2c1687bf241a4b88729d256dc67f040fe89aba030ab8590913f79",
+    "email": "joseph@lifebox.ng",
+    "password": "newpassword"
+}
