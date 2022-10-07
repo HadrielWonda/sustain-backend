@@ -10,10 +10,10 @@ const { getRecipeList, getSingleRecipe, getMealPlan } = require('../controllers/
 
 const router = express.Router();
 
-router.post('/login', validator.validate('login'), login);
-router.post('/signup', validator.validate('signUp'), signUp);
-router.post('/forgot-password', resetPassword);
-router.post('/new-password', setNewPassword);
+router.post('/auth/login', validator.validate('login'), login);
+router.post('/auth/signup', validator.validate('signUp'), signUp);
+router.post('/auth/forgot-password', resetPassword);
+router.post('/auth/new-password', setNewPassword);
 
 router.post('/payments/webhook', webhook);
 router.post('/payments/intialize', webhook);

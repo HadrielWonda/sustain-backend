@@ -34,6 +34,8 @@ exports.login = async (req, res, next) => {
                 email: user.email,
                 userID: user._id
             }, 'testsecretkey')
+            user.authToken = token;
+            await user.save();
             return res.status(200).json({
                 message: 'login successful',
                 data: {
@@ -91,6 +93,8 @@ exports.signUp = async (req, res, next) => {
             email: result.email,
             userID: result._id
         }, 'testsecretkey')
+        user.authToken = token;
+        await user.save();
         res.status(201).json({
             message: 'account created successfully',
             data: {
@@ -110,6 +114,24 @@ exports.signUp = async (req, res, next) => {
         //     subject: 'Welcome to Sustain',
         //     html: email.getWelcomeEmailHtml()
         // })
+    } catch (e) {
+        next(e);
+    }
+}
+
+exports.logout = (req, res, next) => {
+    try {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+        const error = new Error('invalid email or reset token')
+        error.status = 404
+        throw error
+    }
+    user.authToken = undefined;
+    await user.save()
+    res.status(200).json({
+        message: 'logout successful',
+    })
     } catch (e) {
         next(e);
     }
@@ -161,7 +183,6 @@ exports.setNewPassword = async (req, res, next) => {
             error.status = 404
             throw error
         }
-        console.log(req.body.password)
         const hashedPass = await bcrypt.hash(req.body.password, 12)
         user.password = hashedPass;
         user.resetToken = undefined;
