@@ -1,5 +1,5 @@
 const express = require('express');
-const { login, signUp, resetPassword, setNewPassword } = require('../controllers/user/auth');
+const { login, signUp, resetPassword, setNewPassword, logout } = require('../controllers/user/auth');
 const { webhook } = require('../controllers/user/payments');
 const { getPatientList, editProfile, getSinglePatient } = require('../controllers/user/user');
 const { getFoodLogs, getBloodGlucoseLogs, getBloodPressureLogs, getWeightLogs, saveBloodGlucose, saveBloodPressure, saveFood, saveWeight, getBiomarkersSummary } = require('../controllers/user/biomarkers');
@@ -13,7 +13,8 @@ const router = express.Router();
 router.post('/auth/login', validator.validate('login'), login);
 router.post('/auth/signup', validator.validate('signUp'), signUp);
 router.post('/auth/forgot-password', resetPassword);
-router.post('/auth/new-password', setNewPassword);
+router.post('/auth/new-password', validator.validate('newPass'), setNewPassword);
+router.post('/auth/logout', hasValidToken, logout);
 
 router.post('/payments/webhook', webhook);
 router.post('/payments/intialize', webhook);

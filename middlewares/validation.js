@@ -6,7 +6,7 @@ exports.validate = (method) => {
         case 'login': {
             return [
                 body('email').trim().isEmail().withMessage('please enter a valid email').normalizeEmail(),
-                body('password', 'please enter a password with at least 5 characters').trim().isLength({ min: 6 }),
+                body('password', 'please enter a password with at least 6 characters').trim().isLength({ min: 6 }),
             ]
         }
         case 'signUp': {
@@ -20,9 +20,14 @@ exports.validate = (method) => {
                         }
                     })
                 }).normalizeEmail(),
-                body('password', 'please enter a password with at least 5 characters').trim().isLength({ min: 6 }),
+                body('password', 'please enter a password with at least 6 characters').trim().isLength({ min: 6 }),
                 body('first_name', 'first name field should not be empty').trim().not().isEmpty(),
                 body('last_name', 'first name field should not be empty').trim().not().isEmpty()
+            ]
+        }
+        case 'newPass': {
+            return [
+                body('password', 'please enter a password with at least 6 characters').trim().isLength({ min: 6 }),
             ]
         }
         case 'saveBloodPressureLog': {

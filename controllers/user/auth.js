@@ -119,11 +119,11 @@ exports.signUp = async (req, res, next) => {
     }
 }
 
-exports.logout = (req, res, next) => {
+exports.logout = async (req, res, next) => {
     try {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findById(req.userID);
     if (!user) {
-        const error = new Error('invalid email or reset token')
+        const error = new Error('invalid token')
         error.status = 404
         throw error
     }

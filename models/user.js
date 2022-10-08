@@ -83,7 +83,6 @@ const userSchema = new Schema({
     }],
     authToken: {
         type: String,
-        required: true
     },
     pushToken: {
         type: String
