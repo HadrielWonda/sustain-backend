@@ -7,7 +7,7 @@ const file = require('../../utils/file');
 
 exports.getBloodGlucoseLogs = async (req, res, next) => {
     try {
-        const result = await BloodGlucose.find({ userID: req.params.patientID });
+        const result = await BloodGlucose.find({ userID: req.params.patientID }).sort({_id: -1});
         res.status(200).send({result});
     } catch (e) {
         next(e);
@@ -16,7 +16,7 @@ exports.getBloodGlucoseLogs = async (req, res, next) => {
 
 exports.getBloodPressureLogs = async (req, res, next) => {
     try {
-        const result = await BloodPressure.find({ userID: req.params.patientID });
+        const result = await BloodPressure.find({ userID: req.params.patientID }).sort({_id: -1});
         res.status(200).send({result});
     } catch (e) {
         next(e);
@@ -25,7 +25,7 @@ exports.getBloodPressureLogs = async (req, res, next) => {
 
 exports.getWeightLogs = async (req, res, next) => {
     try {
-        const result = await Weight.find({ userID: req.params.patientID });
+        const result = await Weight.find({ userID: req.params.patientID }).sort({_id: -1});
         res.status(200).send({result});
     } catch (e) {
         next(e);
@@ -34,7 +34,7 @@ exports.getWeightLogs = async (req, res, next) => {
 
 exports.getFoodLogs = async (req, res, next) => {
     try {
-        const result = await Food.find({ userID: req.params.patientID });
+        const result = await Food.find({ userID: req.params.patientID }).sort({_id: -1});
         res.status(200).send({result});
     } catch (e) {
         next(e);
