@@ -1,5 +1,5 @@
   onst bcrypt = require('bcryptjs');
-const User = require('../../models/admin');
+const Admin = require('../../models/admin');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const sendgridTransport = require('nodemailer-sendgrid-transport');
@@ -22,7 +22,7 @@ exports.login = async (req, res, next) => {
         });
     }
     try {
-        const user = await User.findOne({ email: req.body.email });
+        const admin = await User.findOne({ email: req.body.email });
         if (!user) {
             const error = new Error('an admin with this email does not exist');
             error.status = 404;
@@ -37,7 +37,7 @@ exports.login = async (req, res, next) => {
             user.authToken = token;
             await user.save();
             return res.status(200).json({
-                message: 'login successful',
+                message: 'login successful, welcome',
                 data: {
                     token: token,
                     user: {
